@@ -1,0 +1,147 @@
+{
+  "theme": "light",
+  "archetype": "1_organic_earthy",
+  "brand_name": "The Blooming Branch Team",
+  "tagline": "Let's grow, speak, and bloom together.",
+  "colors": {
+    "background": {
+      "default": "#F5EFE5",
+      "paper": "#FFFFFF",
+      "muted": "#EFE9DF"
+    },
+    "primary": {
+      "DEFAULT": "#4A3A28",
+      "foreground": "#FFFFFF",
+      "hover": "#3D2F20"
+    },
+    "secondary": {
+      "DEFAULT": "#8A9A86",
+      "foreground": "#FFFFFF",
+      "hover": "#788774"
+    },
+    "accent": {
+      "DEFAULT": "#D4B8B1",
+      "foreground": "#4A3A28",
+      "hover": "#C5A59D"
+    },
+    "text": {
+      "primary": "#4A3A28",
+      "secondary": "#6A5D4D",
+      "muted": "#968B7D"
+    },
+    "border": {
+      "default": "#E2D9CB",
+      "focus": "#8A9A86"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "'Cormorant Garamond', serif",
+      "body": "'Manrope', sans-serif"
+    },
+    "hierarchy": {
+      "h1": "text-5xl sm:text-6xl+ font-medium tracking-tight leading-none text-primary",
+      "h2": "text-4xl sm:text-5xl font-medium tracking-tight leading-tight text-primary",
+      "h3": "text-2xl sm:text-3xl font-medium tracking-tight text-primary",
+      "h4": "text-xl sm:text-2xl font-medium text-primary",
+      "body_large": "text-lg text-text-secondary leading-relaxed",
+      "body": "text-base text-text-secondary leading-relaxed",
+      "overline": "text-sm font-semibold tracking-[0.2em] uppercase text-secondary"
+    }
+  },
+  "spacing_and_layout": {
+    "container": "max-w-7xl mx-auto px-6 sm:px-8 lg:px-12",
+    "section_padding": "py-24 sm:py-32",
+    "grid": {
+      "bento_marketing": "grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12",
+      "cards": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+    },
+    "border_radius": {
+      "card": "rounded-[2rem]",
+      "button": "rounded-full",
+      "image": "rounded-[2.5rem]"
+    }
+  },
+  "surfaces": {
+    "card": "bg-white shadow-[0_8px_30px_rgba(74,58,40,0.04)] border border-[#E2D9CB] p-8 sm:p-10 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(74,58,40,0.08)]",
+    "glass_header": "bg-[#F5EFE5]/80 backdrop-blur-xl border-b border-[#E2D9CB]/50",
+    "image_overlay": "bg-gradient-to-t from-[#4A3A28]/40 to-transparent"
+  },
+  "motion": {
+    "transitions": "transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]",
+    "framer_motion": {
+      "fade_up": { "initial": { "opacity": 0, "y": 30 }, "whileInView": { "opacity": 1, "y": 0 }, "viewport": { "once": true, "margin": "-100px" } },
+      "float": { "animate": { "y": [0, -10, 0] }, "transition": { "duration": 4, "repeat": "Infinity", "ease": "easeInOut" } }
+    }
+  },
+  "components": {
+    "button": {
+      "primary": "inline-flex items-center justify-center bg-primary text-white rounded-full px-8 py-4 font-medium transition-all hover:bg-primary-hover hover:scale-105 active:scale-95",
+      "secondary": "inline-flex items-center justify-center bg-secondary text-white rounded-full px-8 py-4 font-medium transition-all hover:bg-secondary-hover hover:scale-105 active:scale-95",
+      "outline": "inline-flex items-center justify-center border border-primary text-primary rounded-full px-8 py-4 font-medium transition-all hover:bg-primary hover:text-white"
+    },
+    "forms": {
+      "input": "w-full bg-white border border-border-default rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition-all placeholder:text-text-muted text-primary"
+    }
+  },
+  "media": {
+    "logos": {
+      "brand": "https://customer-assets.emergentagent.com/job_grow-speak-bloom/artifacts/6ataomx6_495029358_122102872016863635_1789127969748974907_n.jpg"
+    },
+    "images": [
+      {
+        "category": "hero",
+        "url": "https://images.pexels.com/photos/34256524/pexels-photo-34256524.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Abstract soft warm background beige green pink, use as atmospheric hero background under text"
+      },
+      {
+        "category": "hero_alternate",
+        "url": "https://images.unsplash.com/photo-1764267703828-843753961a1e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxwYXJlbnQlMjBhbmQlMjBjaGlsZCUyMGxlYXJuaW5nJTIwdG9nZXRoZXIlMjB3YXJtJTIwbGlnaHR8ZW58MHx8fHwxNzc2OTI0NTYyfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Mother and son sharing a tender moment - use for emotional connection in hero or about section"
+      },
+      {
+        "category": "services_speech_therapy",
+        "url": "https://images.unsplash.com/photo-1768096043738-0675e58ddbdd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwzfHxzcGVlY2glMjB0aGVyYXB5JTIwc2Vzc2lvbiUyMG5hdHVyYWwlMjBsaWdodHxlbnwwfHx8fDE3NzY5MjQ1NjJ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Young boy laughing, soft natural light - perfect for child speech therapy section"
+      },
+      {
+        "category": "services_executive_functioning",
+        "url": "https://images.pexels.com/photos/8872203/pexels-photo-8872203.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Mature woman and young man collaborating - perfect for adult executive functioning / coaching"
+      },
+      {
+        "category": "shop_digital_downloads",
+        "url": "https://images.pexels.com/photos/5206088/pexels-photo-5206088.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Close-up of a tablet with highlighted text - perfect for digital materials shop"
+      },
+      {
+        "category": "shop_physical_materials",
+        "url": "https://images.unsplash.com/photo-1676116777245-1cc40079cd38?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwyfHxkaWdpdGFsJTIwcHJvZHVjdHMlMjBtb2NrdXAlMjB0YWJsZXR8ZW58MHx8fHwxNzc2OTI0NTczfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Tablet and educational materials laid out on a table"
+      },
+      {
+        "category": "decor_botanical",
+        "url": "https://images.unsplash.com/photo-1588690740242-b798f7736bfc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODl8MHwxfHNlYXJjaHwxfHxib3RhbmljYWwlMjBsZWFmJTIwYnJhbmNoJTIwc2FnZSUyMGdyZWVufGVufDB8fHx8MTc3NjkyNDU3M3ww&ixlib=rb-4.1.0&q=85",
+        "description": "Sage green leaves on white background - use as isolated botanical accents floating in sections"
+      },
+      {
+        "category": "about_coaching",
+        "url": "https://images.pexels.com/photos/5234585/pexels-photo-5234585.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Therapist taking notes during session - professional adult coaching representation"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Build a full-stack marketing and e-commerce site using Next.js/React.js, Tailwind CSS, and Shadcn UI.",
+    "Target audience is wide (2-18 for kids, up to 99 for adults), so maintain a PREMIUM, PROFESSIONAL, EDITORIAL tone. Avoid childish tropes like primary color blocks or Comic Sans.",
+    "Font Loading: Import 'Cormorant Garamond' (weights 400, 500, 600) and 'Manrope' (weights 400, 500, 600, 700) from Google Fonts.",
+    "Layout Approach: Use asymmetrical grids with generous padding (p-12, p-16). Avoid centered blocks of text for everything; use left-aligned typography to maintain an editorial feel.",
+    "Motion: Implement Framer Motion for scroll animations. Cards and images should have a slow, gentle 'fade up' and subtle scale on hover.",
+    "Header: Use a sticky glassmorphic header (bg-[#F5EFE5]/80 with backdrop-blur-xl). Ensure navigation links are accessible.",
+    "Data Test IDs: All interactive elements (buttons, nav links, form inputs) MUST have data-testid attributes (e.g., data-testid='contact-submit-button').",
+    "Shop Feature: Implement digital downloads using Stripe for checkout. Products should be displayed in a clean, high-end bento grid.",
+    "Booking Feature: For now, the booking page is just a high-quality scheduling request form (no payment).",
+    "Use Phosphor icons or Lucide icons for clean, thin-line iconography that matches the editorial serif fonts.",
+    "For images with transparent backgrounds (like the botanical decor), use Framer Motion to make them slowly float or drift in the negative space of the layout."
+  ]
+}
