@@ -1,54 +1,75 @@
-import { useEffect } from "react";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Toaster } from "sonner";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Services from "./pages/Services";
+import Contact from "./pages/Contact";
+import Booking from "./pages/Booking";
+import Shop from "./pages/Shop";
+import ShopDetail from "./pages/ShopDetail";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const ScrollToTop = () => {
+    const { pathname } = useLocation();
+    React.useEffect(() => {
+        window.scrollTo({ top: 0, behavior: "instant" });
+    }, [pathname]);
+    return null;
+};
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
+const PublicLayout = ({ children }) => (
+    <div className="min-h-screen flex flex-col bg-bloom-cream">
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
     </div>
-  );
+);
+
+const RequireAdmin = ({ children }) => {
+    const { user, loading } = useAuth();
+    if (loading) return <div className="p-20 text-center text-bloom-text2">Loading…</div>;
+    if (!user) return <Navigate to="/admin/login" replace />;
+    return children;
 };
 
 function App() {
-  return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
-  );
+    return (
+        <AuthProvider>
+            <BrowserRouter>
+                <ScrollToTop />
+                <Toaster position="top-center" richColors />
+                <Routes>
+                    <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+                    <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+                    <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
+                    <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+                    <Route path="/booking" element={<PublicLayout><Booking /></PublicLayout>} />
+                    <Route path="/shop" element={<PublicLayout><Shop /></PublicLayout>} />
+                    <Route path="/shop/:id" element={<PublicLayout><ShopDetail /></PublicLayout>} />
+                    <Route path="/checkout/success" element={<PublicLayout><CheckoutSuccess /></PublicLayout>} />
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route
+                        path="/admin"
+                        element={
+                            <RequireAdmin>
+                                <AdminDashboard />
+                            </RequireAdmin>
+                        }
+                    />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
+    );
 }
 
 export default App;

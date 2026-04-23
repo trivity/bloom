@@ -1,0 +1,49 @@
+{
+  "summary": "Tested The Blooming Branch Team app end-to-end. Backend: 19/20 pytest tests passing (95%). Frontend: all critical user flows (home, shop, product detail, contact, booking, admin login, admin product CRUD modal, messages tab) working. One backend bug: /api/checkout/status/{session_id} returns 500 because the Stripe session just created via emergentintegrations cannot be retrieved (Stripe responds 'No such checkout.session').",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/checkout/status/{session_id}",
+        "issue": "Returns 500 with 'No such checkout.session: cs_test_...' from emergentintegrations StripeCheckout.get_checkout_status. Session is created successfully via POST /api/checkout/session and persisted in payment_transactions, but retrieving status on the same session_id fails immediately. Likely cause: emergentintegrations library creates the session using a managed key/account, but get_checkout_status appears to query a different Stripe account (or test/live mismatch). Frontend CheckoutSuccess page will break during polling.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Shop checkout success polling",
+        "issue": "Because /api/checkout/status returns 500, the /checkout/success page polling will never surface a download_token. User-visible impact if Stripe redirect ever completes in test mode.",
+        "affected_selectors": ["/checkout/success polling"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Investigate emergentintegrations Stripe session retrieval: session_id created via stripe.create_checkout_session cannot be fetched by stripe.get_checkout_status (Stripe: 'No such checkout.session'). Possibly need to pass the same webhook_url / host, or pin to a single StripeCheckout instance. Try logging the raw session_id and confirm it matches what Stripe dashboard shows. Could also be key-env mismatch (sk_test_emergent routes through a proxy that scopes sessions).",
+    "Consider wrapping get_checkout_status in try/except to return 502/friendly error instead of unhandled 500.",
+    "Add data-testid attributes to admin product-form fields (name, description, price, category, image_url) for more robust automated testing."
+  ],
+  "critical_code_review_comments": [
+    "server.py line 337-339 _stripe() constructs a new StripeCheckout per request using request.base_url for webhook_url. request.base_url inside Kubernetes ingress may differ between create and status calls; ensure consistent webhook_url (use REACT_APP_BACKEND_URL env or a fixed PUBLIC_BASE_URL env var).",
+    "server.py line 423-444 stripe_webhook: no idempotency guard on payment_status other than existing download_token check — fine, but consider storing webhook event id to avoid replay.",
+    "server.py uses @app.on_event('startup'/'shutdown') which is deprecated in FastAPI; prefer lifespan context manager.",
+    "Admin modal form lacks data-testid on inputs (name/description/price/category/image_url) — flagged in action items."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "95%", "frontend": "100% of tested critical flows"},
+  "test_credentials": "admin / bloom2026 (from /app/memory/test_credentials.md) — verified working",
+  "seed_data_creation": "None created manually. Backend seeds 1 admin + 4 demo products on startup; test data prefixed TEST_ was cleaned up after tests.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend tests live at /app/backend/tests/backend_test.py — run with: REACT_APP_BACKEND_URL=<url> pytest /app/backend/tests/backend_test.py -v. Only failing test is TestCheckout::test_checkout_status_initiated (depends on Stripe retrieval fix). Frontend admin modal product-form inputs use label-based selectors (Name, Description, Price) — no data-testid on individual fields. All other interactive elements have data-testid.",
+  "rca_of_the_issue": "POST /api/checkout/session returns 200 with a Stripe session_id (cs_test_a1...) and persists a payment_transaction row with status=initiated. Subsequent GET /api/checkout/status/{session_id} raises emergentintegrations.payments.stripe.checkout.CheckoutError: 'Failed to retrieve session status: No such checkout.session: cs_test_a1...'. The session is created and retrieved from the same backend process seconds apart. Most likely root cause: inside emergentintegrations, create_checkout_session uses the emergent-proxied Stripe endpoint (sk_test_emergent routes to a managed test account) while get_checkout_status queries Stripe directly with a literal sk_test_emergent key — mismatch produces 'No such session'. Alternative cause: webhook_url is derived from request.base_url which could resolve to the internal host instead of the external preview URL, causing Stripe to reject session. Mitigation: (1) verify by hardcoding webhook_url to REACT_APP_BACKEND_URL in backend .env, (2) or check emergentintegrations docs for a combined init that persists the same sandbox for create+retrieve."
+}
