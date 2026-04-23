@@ -388,33 +388,54 @@ async def checkout_status(session_id: str, request: Request):
     if not txn:
         raise HTTPException(404, "Session not found")
 
+    # Try to refresh from Stripe; if the emergent test proxy can't retrieve,
+    # fall back to the DB state (webhook will have updated it when payment completes).
     stripe = _stripe(request)
-    status: CheckoutStatusResponse = await stripe.get_checkout_status(session_id)
+    live_status: Optional[str] = None
+    live_payment_status: Optional[str] = None
+    live_amount: Optional[int] = None
+    live_currency: Optional[str] = None
+    try:
+        s: CheckoutStatusResponse = await stripe.get_checkout_status(session_id)
+        live_status = s.status
+        live_payment_status = s.payment_status
+        live_amount = s.amount_total
+        live_currency = s.currency
+    except Exception as e:
+        logger.warning(f"Stripe retrieve failed for {session_id}: {e}. Falling back to DB.")
 
-    # Idempotent update
+    # Decide effective payment_status (prefer "paid" if either source says so)
+    effective_payment_status = live_payment_status or txn.get("payment_status") or "unpaid"
+    if txn.get("payment_status") == "paid":
+        effective_payment_status = "paid"
+
+    # Idempotent mint of download_token
     download_token = txn.get("download_token")
-    if status.payment_status == "paid" and not download_token:
+    if effective_payment_status == "paid" and not download_token:
         download_token = uuid.uuid4().hex
         await db.payment_transactions.update_one(
             {"session_id": session_id},
             {"$set": {
-                "status": status.status,
-                "payment_status": status.payment_status,
+                "status": live_status or "complete",
+                "payment_status": "paid",
                 "download_token": download_token,
                 "paid_at": datetime.now(timezone.utc).isoformat(),
             }},
         )
-    else:
+    elif live_status or live_payment_status:
         await db.payment_transactions.update_one(
             {"session_id": session_id},
-            {"$set": {"status": status.status, "payment_status": status.payment_status}},
+            {"$set": {
+                "status": live_status or txn.get("status", "pending"),
+                "payment_status": effective_payment_status,
+            }},
         )
 
     return CheckoutStatus(
-        status=status.status,
-        payment_status=status.payment_status,
-        amount_total=status.amount_total,
-        currency=status.currency,
+        status=live_status or txn.get("status", "pending"),
+        payment_status=effective_payment_status,
+        amount_total=live_amount if live_amount is not None else int(float(txn.get("amount", 0)) * 100),
+        currency=live_currency or txn.get("currency", "usd"),
         download_token=download_token,
         product_name=txn.get("product_name"),
     )
