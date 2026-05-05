@@ -148,22 +148,46 @@ const AdminDashboard = () => {
     };
 
     // ----- Orders -----
+    const safeCopy = async (text) => {
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(text);
+                return true;
+            }
+        } catch (e) {
+            // permission denied or unavailable
+        }
+        try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            return true;
+        } catch {
+            return false;
+        }
+    };
     const reissue = async (orderId) => {
         try {
             const { data } = await api.post(`/admin/orders/${orderId}/reissue`);
             toast.success("New download link generated");
             load();
             const link = `${API}/download/${data.download_token}`;
-            navigator.clipboard?.writeText(link);
-            toast(`Copied to clipboard: ${link}`, { duration: 6000 });
+            const ok = await safeCopy(link);
+            toast(ok ? `Copied to clipboard: ${link}` : `Link: ${link}`, { duration: 8000 });
         } catch (err) {
             toast.error(err?.response?.data?.detail || "Could not reissue");
         }
     };
-    const copyLink = (token) => {
+    const copyLink = async (token) => {
         const link = `${API}/download/${token}`;
-        navigator.clipboard?.writeText(link);
-        toast.success("Download link copied");
+        const ok = await safeCopy(link);
+        if (ok) toast.success("Download link copied");
+        else toast(`Link: ${link}`, { duration: 8000 });
     };
 
     const tabs = [
