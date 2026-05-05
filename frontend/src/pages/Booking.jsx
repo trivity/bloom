@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { api } from "../lib/api";
 import { Overline, SectionTitle } from "../components/ui-bits";
 import { Leaf, Flower, Branch } from "../components/BotanicalAccent";
+import SEO from "../components/SEO";
 
 const SERVICES = [
     "Speech Therapy",
@@ -44,6 +45,10 @@ const Booking = () => {
 
     return (
         <div className="relative overflow-hidden">
+            <SEO
+                title="Book a Free Consult"
+                description="Free 15-minute consult — no commitment, just a conversation. Tell us a little about who you're here for and we'll follow up within one business day."
+            />
             <section className="pt-20 pb-12 sm:pt-28" data-testid="booking-hero">
                 <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative">
                     <Leaf className="absolute -right-4 top-0 w-20 h-20 opacity-50 hidden md:block" rotate={25} />

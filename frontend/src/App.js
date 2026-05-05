@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
+import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -52,11 +53,12 @@ const RequireAdmin = ({ children }) => {
 
 function App() {
     return (
-        <AuthProvider>
-            <BrowserRouter>
-                <ScrollToTop />
-                <Tracker />
-                <Toaster position="top-center" richColors />
+        <HelmetProvider>
+            <AuthProvider>
+                <BrowserRouter>
+                    <ScrollToTop />
+                    <Tracker />
+                    <Toaster position="top-center" richColors />
                 <Routes>
                     <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
                     <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
@@ -80,7 +82,8 @@ function App() {
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </BrowserRouter>
-        </AuthProvider>
+            </AuthProvider>
+        </HelmetProvider>
     );
 }
 

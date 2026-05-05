@@ -3,6 +3,7 @@ import { api } from "../lib/api";
 import ProductCard from "../components/ProductCard";
 import { Overline, SectionTitle } from "../components/ui-bits";
 import { Flower } from "../components/BotanicalAccent";
+import SEO from "../components/SEO";
 
 const Shop = () => {
     const [products, setProducts] = useState([]);
@@ -22,6 +23,10 @@ const Shop = () => {
 
     return (
         <div className="relative overflow-hidden">
+            <SEO
+                title="Shop · Digital Downloads"
+                description="Clinician-crafted workbooks, flashcards, and printable PDFs that we use with our own clients — instant download, evidence-aligned, made with love."
+            />
             <section className="pt-20 pb-12 sm:pt-28 relative" data-testid="shop-hero">
                 <Flower className="absolute -right-4 top-10 w-16 h-16 hidden md:block" />
                 <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">

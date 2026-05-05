@@ -698,6 +698,64 @@ async def admin_delete_testimonial(tid: str, _: str = Depends(require_admin)):
     return {"ok": True}
 
 
+# ---------- Routes: Image uploads (admin) + public file serving ----------
+@api_router.post("/admin/uploads/image")
+async def admin_upload_image(file: UploadFile = File(...), _: str = Depends(require_admin)):
+    if not (file.content_type or "").startswith("image/"):
+        raise HTTPException(400, "Only image files are allowed")
+    ext = (file.filename or "img").split(".")[-1].lower()
+    path = f"{APP_NAME}/uploads/images/{uuid.uuid4()}.{ext}"
+    data = await file.read()
+    if len(data) > 8 * 1024 * 1024:
+        raise HTTPException(400, "Image too large (max 8 MB)")
+    put_object(path, data, file.content_type)
+    await db.uploaded_files.insert_one({
+        "id": str(uuid.uuid4()),
+        "storage_path": path,
+        "original_filename": file.filename,
+        "content_type": file.content_type,
+        "size": len(data),
+        "is_deleted": False,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    return {"path": path, "url": f"/api/uploads/{path}"}
+
+
+@api_router.get("/uploads/{file_path:path}")
+async def serve_upload(file_path: str):
+    record = await db.uploaded_files.find_one({"storage_path": file_path, "is_deleted": False}, {"_id": 0})
+    if not record:
+        raise HTTPException(404, "File not found")
+    data, ctype = get_object(file_path)
+    return Response(content=data, media_type=record.get("content_type", ctype), headers={"Cache-Control": "public, max-age=86400"})
+
+
+# ---------- SEO: Sitemap ----------
+@api_router.get("/sitemap.xml")
+async def sitemap(request: Request):
+    # Build absolute URLs honoring proxy headers; force https for SEO
+    proto = request.headers.get("x-forwarded-proto", "https").split(",")[0].strip() or "https"
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.hostname
+    base = f"{proto}://{host}"
+    static_paths = ["/", "/about", "/services", "/shop", "/blog", "/booking", "/contact"]
+    posts = await db.blog_posts.find({"is_published": True}, {"_id": 0, "slug": 1, "published_at": 1}).to_list(1000)
+    products = await db.products.find({"is_published": True}, {"_id": 0, "id": 1, "created_at": 1}).to_list(1000)
+
+    urls = []
+    today = datetime.now(timezone.utc).date().isoformat()
+    for p in static_paths:
+        urls.append(f"<url><loc>{base}{p}</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq></url>")
+    for post in posts:
+        lm = (post.get("published_at") or today).split("T")[0]
+        urls.append(f"<url><loc>{base}/blog/{post['slug']}</loc><lastmod>{lm}</lastmod><changefreq>monthly</changefreq></url>")
+    for prod in products:
+        lm = (prod.get("created_at") or today).split("T")[0]
+        urls.append(f"<url><loc>{base}/shop/{prod['id']}</loc><lastmod>{lm}</lastmod><changefreq>monthly</changefreq></url>")
+
+    body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "\n".join(urls) + "\n</urlset>"
+    return Response(content=body, media_type="application/xml")
+
+
 # ---------- Seed ----------
 async def seed_admin_and_products():
     existing = await db.admins.find_one({"username": ADMIN_USERNAME}, {"_id": 0})

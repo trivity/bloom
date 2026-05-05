@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { api } from "../lib/api";
 import { Overline } from "../components/ui-bits";
 import { ArrowLeft, Check, Download } from "lucide-react";
+import SEO from "../components/SEO";
 
 const ShopDetail = () => {
     const { id } = useParams();
@@ -48,6 +49,12 @@ const ShopDetail = () => {
 
     return (
         <div className="relative">
+            <SEO
+                title={product.name}
+                description={product.description}
+                image={product.image_url}
+                type="product"
+            />
             <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-12 pb-24 sm:pb-32">
                 <Link to="/shop" className="inline-flex items-center gap-2 text-sm text-bloom-text2 hover:text-bloom-cocoa mb-8" data-testid="shop-detail-back">
                     <ArrowLeft size={16} /> Back to shop

@@ -1,0 +1,9 @@
+# robots.txt for The Blooming Branch Team
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout/
+
+Sitemap: /api/sitemap.xml

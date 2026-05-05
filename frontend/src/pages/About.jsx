@@ -3,6 +3,7 @@ import { Reveal, Overline, SectionTitle } from "../components/ui-bits";
 import { Leaf, Flower, Branch } from "../components/BotanicalAccent";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
 
 const VALUES = [
     { title: "Innovative", body: "We weave fresh, evidence-based practice into every session." },
@@ -15,6 +16,10 @@ const VALUES = [
 const About = () => {
     return (
         <div className="relative overflow-hidden">
+            <SEO
+                title="About"
+                description="Meet The Blooming Branch Team — a small, senior-led practice braiding clinical care with transformational coaching for every age and every stage."
+            />
             {/* HERO */}
             <section className="pt-20 pb-20 sm:pt-28 sm:pb-28 relative" data-testid="about-hero">
                 <Leaf className="absolute left-[5%] top-[18%] w-14 h-14 opacity-60 hidden md:block" rotate={-30} />

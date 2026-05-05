@@ -6,6 +6,7 @@ import ServiceCard from "../components/ServiceCard";
 import { Reveal, Overline, SectionTitle } from "../components/ui-bits";
 import { Leaf, Flower, Branch } from "../components/BotanicalAccent";
 import TestimonialsSection from "../components/TestimonialsSection";
+import SEO from "../components/SEO";
 
 const HERO_IMG =
     "https://images.unsplash.com/photo-1764267703828-843753961a1e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxwYXJlbnQlMjBhbmQlMjBjaGlsZCUyMGxlYXJuaW5nJTIwdG9nZXRoZXIlMjB3YXJtJTIwbGlnaHR8ZW58MHx8fHwxNzc2OTI0NTYyfDA&ixlib=rb-4.1.0&q=85";
@@ -65,6 +66,10 @@ const SERVICES = [
 const Home = () => {
     return (
         <div className="relative overflow-hidden">
+            <SEO
+                title={null}
+                description="Speech therapy, executive functioning, tutoring, and parent coaching for ages 2 to 99 — clinical depth meets transformational coaching. Let's grow, speak, and bloom together."
+            />
             {/* HERO */}
             <section className="relative pt-16 pb-24 sm:pt-24 sm:pb-32" data-testid="home-hero">
                 <Leaf className="absolute left-[4%] top-[14%] w-16 h-16 opacity-70 hidden md:block" rotate={-25} delay={0.3} />

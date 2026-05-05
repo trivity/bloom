@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { MessageCircle, Brain, GraduationCap, Heart, Sparkles, BookOpen, Users } from "lucide-react";
 import { Reveal, Overline, SectionTitle } from "../components/ui-bits";
 import { Leaf } from "../components/BotanicalAccent";
+import SEO from "../components/SEO";
 
 const SERVICES = [
     {
@@ -60,6 +61,10 @@ const SERVICES = [
 const Services = () => {
     return (
         <div className="relative overflow-hidden">
+            <SEO
+                title="Services"
+                description="Speech therapy, executive functioning, tutoring, early intervention, parent coaching, consulting, and clinician-crafted materials — tailored to ages 2 to 99."
+            />
             <section className="pt-20 pb-14 sm:pt-28 sm:pb-20" data-testid="services-hero">
                 <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
                     <SectionTitle

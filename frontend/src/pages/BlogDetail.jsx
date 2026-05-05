@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { ArrowLeft } from "lucide-react";
+import SEO from "../components/SEO";
 
 const renderParagraph = (block, idx) => {
     // Very light markdown-ish rendering: bold via **text** and paragraph breaks
@@ -48,6 +49,12 @@ const BlogDetail = () => {
 
     return (
         <article className="relative">
+            <SEO
+                title={post.title}
+                description={post.excerpt}
+                image={post.cover_image}
+                type="article"
+            />
             <div className="max-w-4xl mx-auto px-6 sm:px-8 lg:px-12 pt-12">
                 <Link to="/blog" className="inline-flex items-center gap-2 text-sm text-bloom-text2 hover:text-bloom-cocoa mb-8" data-testid="blog-detail-back">
                     <ArrowLeft size={16} /> Back to journal

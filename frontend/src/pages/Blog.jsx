@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import { Overline, SectionTitle, Reveal } from "../components/ui-bits";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+import SEO from "../components/SEO";
 
 const Blog = () => {
     const [posts, setPosts] = useState([]);
@@ -15,6 +16,10 @@ const Blog = () => {
 
     return (
         <div className="relative">
+            <SEO
+                title="Journal"
+                description="Notes from The Blooming Branch Team — strategies, stories, and quiet wisdom from our work with families, children, and adults."
+            />
             <section className="pt-20 pb-12 sm:pt-28" data-testid="blog-hero">
                 <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
                     <SectionTitle

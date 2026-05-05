@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import { Overline, SectionTitle } from "../components/ui-bits";
 import { Leaf, Flower } from "../components/BotanicalAccent";
 import { Mail, Phone, MapPin } from "lucide-react";
+import SEO from "../components/SEO";
 
 const Contact = () => {
     const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
@@ -27,6 +28,10 @@ const Contact = () => {
 
     return (
         <div className="relative overflow-hidden">
+            <SEO
+                title="Contact"
+                description="Questions about services, products, or where to start? Drop us a note — a real human on our team will reply within 2 business days."
+            />
             <section className="pt-20 pb-12 sm:pt-28" data-testid="contact-hero">
                 <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
                     <SectionTitle

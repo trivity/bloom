@@ -17,6 +17,7 @@ import {
     Copy,
     ExternalLink,
 } from "lucide-react";
+import ImageUploader from "../components/ImageUploader";
 
 const emptyProduct = { name: "", description: "", price: 0, category: "Digital Download", image_url: "", is_published: true };
 const emptyBlog = { title: "", slug: "", excerpt: "", content: "", cover_image: "", author: "The Blooming Branch Team", is_published: true };
@@ -575,7 +576,7 @@ const ProductForm = ({ form, setForm }) => (
             <Field label="Price (USD)"><input required type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className={ic} data-testid="admin-form-price" /></Field>
             <Field label="Category"><input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={ic} data-testid="admin-form-category" /></Field>
         </div>
-        <Field label="Image URL (optional)"><input value={form.image_url || ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className={ic} placeholder="https://…" data-testid="admin-form-image" /></Field>
+        <ImageUploader label="Cover image" value={form.image_url} onChange={(url) => setForm({ ...form, image_url: url })} testid="admin-product-cover" />
         <CheckboxField checked={!!form.is_published} onChange={(v) => setForm({ ...form, is_published: v })} label="Published (visible on shop)" testid="admin-form-published" />
     </>
 );
@@ -588,7 +589,7 @@ const BlogForm = ({ form, setForm }) => (
         <Field label="Content (use **bold** for emphasis, blank line for new paragraph)">
             <textarea required rows={10} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className={ic + " resize-none font-mono text-xs"} data-testid="admin-blog-content" />
         </Field>
-        <Field label="Cover image URL"><input value={form.cover_image || ""} onChange={(e) => setForm({ ...form, cover_image: e.target.value })} className={ic} placeholder="https://…" data-testid="admin-blog-cover" /></Field>
+        <ImageUploader label="Cover image" value={form.cover_image} onChange={(url) => setForm({ ...form, cover_image: url })} testid="admin-blog-cover" />
         <Field label="Author"><input value={form.author || ""} onChange={(e) => setForm({ ...form, author: e.target.value })} className={ic} data-testid="admin-blog-author" /></Field>
         <CheckboxField checked={!!form.is_published} onChange={(v) => setForm({ ...form, is_published: v })} label="Published" testid="admin-blog-published" />
     </>
@@ -601,7 +602,7 @@ const TestimonialForm = ({ form, setForm }) => (
             <Field label="Name"><input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={ic} data-testid="admin-testimonial-name" /></Field>
             <Field label="Role / context"><input value={form.role || ""} onChange={(e) => setForm({ ...form, role: e.target.value })} className={ic} data-testid="admin-testimonial-role" /></Field>
         </div>
-        <Field label="Image URL (optional)"><input value={form.image_url || ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className={ic} data-testid="admin-testimonial-image" /></Field>
+        <ImageUploader label="Photo (optional)" value={form.image_url} onChange={(url) => setForm({ ...form, image_url: url })} testid="admin-testimonial-photo" />
         <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Rating (1-5)"><input type="number" min="1" max="5" value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })} className={ic} data-testid="admin-testimonial-rating" /></Field>
             <Field label="Sort order"><input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: e.target.value })} className={ic} data-testid="admin-testimonial-sort" /></Field>
