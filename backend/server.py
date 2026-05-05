@@ -226,6 +226,86 @@ class CheckoutStatus(BaseModel):
     product_name: Optional[str] = None
 
 
+class BlogPost(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    slug: str
+    excerpt: str
+    content: str
+    cover_image: Optional[str] = None
+    author: str = "The Blooming Branch Team"
+    is_published: bool = True
+    published_at: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class BlogCreate(BaseModel):
+    title: str
+    slug: str
+    excerpt: str
+    content: str
+    cover_image: Optional[str] = None
+    author: str = "The Blooming Branch Team"
+    is_published: bool = True
+
+
+class BlogUpdate(BaseModel):
+    title: Optional[str] = None
+    slug: Optional[str] = None
+    excerpt: Optional[str] = None
+    content: Optional[str] = None
+    cover_image: Optional[str] = None
+    author: Optional[str] = None
+    is_published: Optional[bool] = None
+
+
+class Testimonial(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    quote: str
+    name: str
+    role: Optional[str] = None
+    image_url: Optional[str] = None
+    rating: Optional[int] = 5
+    is_published: bool = True
+    sort_order: int = 0
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class TestimonialCreate(BaseModel):
+    quote: str
+    name: str
+    role: Optional[str] = None
+    image_url: Optional[str] = None
+    rating: Optional[int] = 5
+    is_published: bool = True
+    sort_order: int = 0
+
+
+class TestimonialUpdate(BaseModel):
+    quote: Optional[str] = None
+    name: Optional[str] = None
+    role: Optional[str] = None
+    image_url: Optional[str] = None
+    rating: Optional[int] = None
+    is_published: Optional[bool] = None
+    sort_order: Optional[int] = None
+
+
+class OrderRow(BaseModel):
+    id: str
+    session_id: str
+    product_id: str
+    product_name: str
+    amount: float
+    currency: str
+    email: str
+    status: str
+    payment_status: str
+    download_token: Optional[str] = None
+    created_at: str
+    paid_at: Optional[str] = None
+
+
 # ---------- Routes: Auth ----------
 @api_router.post("/auth/login", response_model=LoginResponse)
 async def login(body: LoginRequest):
@@ -482,6 +562,142 @@ async def download(token: str):
     )
 
 
+# ---------- Routes: Admin Orders ----------
+@api_router.get("/admin/orders", response_model=List[OrderRow])
+async def admin_list_orders(_: str = Depends(require_admin)):
+    rows = await db.payment_transactions.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    out: List[OrderRow] = []
+    for r in rows:
+        out.append(OrderRow(
+            id=r.get("id", ""),
+            session_id=r.get("session_id", ""),
+            product_id=r.get("product_id", ""),
+            product_name=r.get("product_name", ""),
+            amount=float(r.get("amount", 0)),
+            currency=r.get("currency", "usd"),
+            email=r.get("email", ""),
+            status=r.get("status", ""),
+            payment_status=r.get("payment_status", ""),
+            download_token=r.get("download_token"),
+            created_at=r.get("created_at", ""),
+            paid_at=r.get("paid_at"),
+        ))
+    return out
+
+
+@api_router.post("/admin/orders/{order_id}/reissue")
+async def admin_reissue_download(order_id: str, _: str = Depends(require_admin)):
+    txn = await db.payment_transactions.find_one({"id": order_id}, {"_id": 0})
+    if not txn:
+        raise HTTPException(404, "Order not found")
+    if txn.get("payment_status") != "paid":
+        raise HTTPException(400, "Order is not paid yet")
+    new_token = uuid.uuid4().hex
+    await db.payment_transactions.update_one(
+        {"id": order_id},
+        {"$set": {"download_token": new_token, "reissued_at": datetime.now(timezone.utc).isoformat()}},
+    )
+    return {"download_token": new_token}
+
+
+# ---------- Routes: Blog ----------
+@api_router.get("/blog", response_model=List[BlogPost])
+async def list_blog():
+    rows = await db.blog_posts.find({"is_published": True}, {"_id": 0}).sort("published_at", -1).to_list(500)
+    return [BlogPost(**r) for r in rows]
+
+
+@api_router.get("/blog/{slug}", response_model=BlogPost)
+async def get_blog(slug: str):
+    row = await db.blog_posts.find_one({"slug": slug, "is_published": True}, {"_id": 0})
+    if not row:
+        raise HTTPException(404, "Post not found")
+    return BlogPost(**row)
+
+
+@api_router.get("/admin/blog", response_model=List[BlogPost])
+async def admin_list_blog(_: str = Depends(require_admin)):
+    rows = await db.blog_posts.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return [BlogPost(**r) for r in rows]
+
+
+@api_router.post("/admin/blog", response_model=BlogPost)
+async def admin_create_blog(body: BlogCreate, _: str = Depends(require_admin)):
+    existing = await db.blog_posts.find_one({"slug": body.slug}, {"_id": 0})
+    if existing:
+        raise HTTPException(400, "A post with this slug already exists")
+    post = BlogPost(**body.model_dump())
+    if post.is_published and not post.published_at:
+        post.published_at = datetime.now(timezone.utc).isoformat()
+    await db.blog_posts.insert_one(post.model_dump())
+    return post
+
+
+@api_router.put("/admin/blog/{pid}", response_model=BlogPost)
+async def admin_update_blog(pid: str, body: BlogUpdate, _: str = Depends(require_admin)):
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    current = await db.blog_posts.find_one({"id": pid}, {"_id": 0})
+    if not current:
+        raise HTTPException(404, "Post not found")
+    if updates.get("is_published") and not current.get("published_at"):
+        updates["published_at"] = datetime.now(timezone.utc).isoformat()
+    if updates:
+        await db.blog_posts.update_one({"id": pid}, {"$set": updates})
+    row = await db.blog_posts.find_one({"id": pid}, {"_id": 0})
+    return BlogPost(**row)
+
+
+@api_router.delete("/admin/blog/{pid}")
+async def admin_delete_blog(pid: str, _: str = Depends(require_admin)):
+    r = await db.blog_posts.delete_one({"id": pid})
+    if r.deleted_count == 0:
+        raise HTTPException(404, "Post not found")
+    return {"ok": True}
+
+
+# ---------- Routes: Testimonials ----------
+@api_router.get("/testimonials", response_model=List[Testimonial])
+async def list_testimonials():
+    rows = (
+        await db.testimonials.find({"is_published": True}, {"_id": 0})
+        .sort("sort_order", 1)
+        .to_list(500)
+    )
+    return [Testimonial(**r) for r in rows]
+
+
+@api_router.get("/admin/testimonials", response_model=List[Testimonial])
+async def admin_list_testimonials(_: str = Depends(require_admin)):
+    rows = await db.testimonials.find({}, {"_id": 0}).sort("sort_order", 1).to_list(1000)
+    return [Testimonial(**r) for r in rows]
+
+
+@api_router.post("/admin/testimonials", response_model=Testimonial)
+async def admin_create_testimonial(body: TestimonialCreate, _: str = Depends(require_admin)):
+    t = Testimonial(**body.model_dump())
+    await db.testimonials.insert_one(t.model_dump())
+    return t
+
+
+@api_router.put("/admin/testimonials/{tid}", response_model=Testimonial)
+async def admin_update_testimonial(tid: str, body: TestimonialUpdate, _: str = Depends(require_admin)):
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    if updates:
+        await db.testimonials.update_one({"id": tid}, {"$set": updates})
+    row = await db.testimonials.find_one({"id": tid}, {"_id": 0})
+    if not row:
+        raise HTTPException(404, "Testimonial not found")
+    return Testimonial(**row)
+
+
+@api_router.delete("/admin/testimonials/{tid}")
+async def admin_delete_testimonial(tid: str, _: str = Depends(require_admin)):
+    r = await db.testimonials.delete_one({"id": tid})
+    if r.deleted_count == 0:
+        raise HTTPException(404, "Testimonial not found")
+    return {"ok": True}
+
+
 # ---------- Seed ----------
 async def seed_admin_and_products():
     existing = await db.admins.find_one({"username": ADMIN_USERNAME}, {"_id": 0})
@@ -530,6 +746,73 @@ async def seed_admin_and_products():
             p = Product(**d)
             await db.products.insert_one(p.model_dump())
         logger.info(f"Seeded {len(demo)} demo products")
+
+    # Seed testimonials
+    if await db.testimonials.count_documents({}) == 0:
+        demo_t = [
+            {
+                "quote": "Within three months of starting with The Blooming Branch Team, our daughter went from one-word answers to full sentences. They didn't just teach her to talk — they taught us how to listen.",
+                "name": "Lauren M.",
+                "role": "Parent of a 4-year-old",
+                "rating": 5,
+                "sort_order": 1,
+            },
+            {
+                "quote": "As a special-ed teacher, I rely on their downloads weekly. They're the only therapy materials I've found that respect both the research and the kid in front of me.",
+                "name": "Daniel R.",
+                "role": "Special education teacher",
+                "rating": 5,
+                "sort_order": 2,
+            },
+            {
+                "quote": "I'm 72, in independent living, and I thought I was past learning new things. Their executive functioning program gave me my mornings back.",
+                "name": "Margaret S.",
+                "role": "Adult client, age 72",
+                "rating": 5,
+                "sort_order": 3,
+            },
+        ]
+        for d in demo_t:
+            t = Testimonial(**d)
+            await db.testimonials.insert_one(t.model_dump())
+        logger.info(f"Seeded {len(demo_t)} testimonials")
+
+    # Seed blog
+    if await db.blog_posts.count_documents({}) == 0:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        demo_b = [
+            {
+                "title": "Five Gentle Ways to Build Speech at the Kitchen Table",
+                "slug": "five-gentle-ways-kitchen-table",
+                "excerpt": "Real-life moments are the most powerful therapy. Here are five quiet rituals that turn dinner into a language-rich classroom — without anyone noticing.",
+                "content": "Mealtimes are sacred ground for speech development. The repetition, the predictability, and the shared attention create the perfect conditions for language to flourish.\n\n**1. Narrate the obvious.** \"You're choosing the green spoon. The green spoon is cold.\" Your child hears words bound to real things in real time.\n\n**2. Pause before passing.** When your toddler reaches for the bread, count to five before handing it over. Give them space to ask, gesture, or even point.\n\n**3. Offer a forced choice.** \"Banana or strawberry?\" is far easier than \"What do you want?\" — and it builds a sense of agency.\n\n**4. Sing the boring bits.** Singing slows speech down and stretches sounds. Even \"please pass the salt\" can become a small song.\n\n**5. End with a recap.** Before clearing the table, ask \"What did we eat tonight?\" Recap activates memory and gives your child a chance to use their new words again.\n\nThese five moves aren't fancy. They're not even therapy, technically. They're just attention — slow, focused, loving attention. And that, in the end, is what makes language grow.",
+                "cover_image": "https://images.unsplash.com/photo-1764267703828-843753961a1e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxwYXJlbnQlMjBhbmQlMjBjaGlsZCUyMGxlYXJuaW5nJTIwdG9nZXRoZXIlMjB3YXJtJTIwbGlnaHR8ZW58MHx8fHwxNzc2OTI0NTYyfDA&ixlib=rb-4.1.0&q=85",
+                "is_published": True,
+                "published_at": now_iso,
+            },
+            {
+                "title": "Executive Functioning Isn't Just for Kids",
+                "slug": "executive-functioning-isnt-just-for-kids",
+                "excerpt": "From college freshmen to retirees in independent living, executive functioning skills shape how we move through life. Here's why we work with adults, too.",
+                "content": "When most people hear \"executive functioning,\" they picture a frazzled middle-schooler with a lost worksheet. But the same skills that help an eleven-year-old finish their homework — planning, working memory, task initiation, emotional regulation — are the skills that help a 72-year-old adapt to retirement, or a 45-year-old navigate a career change.\n\nWe believe these skills are not fixed. They're rehearsable. With the right scaffolding, the right rhythm, and a respectful, evidence-based program, an adult of any age can rebuild structure, confidence, and a sense of forward motion.\n\nOur adult program runs for 8 weeks, includes weekly one-on-one sessions, and is adapted entirely to where you live and what your week looks like. We've worked with executives, retirees, college students, and residents of nursing homes. The scaffolding looks different — the work is the same.\n\nIf you're curious, our free 15-minute consult is the place to start. No pressure. Just conversation.",
+                "cover_image": "https://images.pexels.com/photos/8872203/pexels-photo-8872203.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+                "is_published": True,
+                "published_at": now_iso,
+            },
+            {
+                "title": "What Parent Coaching Actually Looks Like",
+                "slug": "what-parent-coaching-actually-looks-like",
+                "excerpt": "Parent coaching is not advice-giving. It's practice — together, in real moments, with a clinician beside you. Here's what to expect.",
+                "content": "When parents hear \"coaching,\" they often picture being lectured at, handed a worksheet, and sent home. That is not what we do.\n\nIn a typical session, we sit on the floor with your child while you sit nearby. We model. You try. We give a word, a gesture, a one-second pause. You try again. By the end of the session, you'll have moved a strategy from your head into your hands — which is the only place strategies actually live.\n\nWe coach one parent at a time, in the home or virtually, in 50-minute sessions. Most families schedule weekly for 8 to 12 weeks. By the end, the routines are running themselves — and the kids are thriving alongside you.",
+                "cover_image": "https://images.pexels.com/photos/5234585/pexels-photo-5234585.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+                "is_published": True,
+                "published_at": now_iso,
+            },
+        ]
+        for d in demo_b:
+            p = BlogPost(**d)
+            await db.blog_posts.insert_one(p.model_dump())
+        logger.info(f"Seeded {len(demo_b)} blog posts")
 
 
 @app.on_event("startup")

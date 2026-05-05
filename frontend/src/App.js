@@ -13,8 +13,12 @@ import Booking from "./pages/Booking";
 import Shop from "./pages/Shop";
 import ShopDetail from "./pages/ShopDetail";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
+import Blog from "./pages/Blog";
+import BlogDetail from "./pages/BlogDetail";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+
+import { useAnalytics } from "./lib/analytics";
 
 import "@/App.css";
 
@@ -23,6 +27,11 @@ const ScrollToTop = () => {
     React.useEffect(() => {
         window.scrollTo({ top: 0, behavior: "instant" });
     }, [pathname]);
+    return null;
+};
+
+const Tracker = () => {
+    useAnalytics();
     return null;
 };
 
@@ -46,6 +55,7 @@ function App() {
         <AuthProvider>
             <BrowserRouter>
                 <ScrollToTop />
+                <Tracker />
                 <Toaster position="top-center" richColors />
                 <Routes>
                     <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
@@ -55,6 +65,8 @@ function App() {
                     <Route path="/booking" element={<PublicLayout><Booking /></PublicLayout>} />
                     <Route path="/shop" element={<PublicLayout><Shop /></PublicLayout>} />
                     <Route path="/shop/:id" element={<PublicLayout><ShopDetail /></PublicLayout>} />
+                    <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
+                    <Route path="/blog/:slug" element={<PublicLayout><BlogDetail /></PublicLayout>} />
                     <Route path="/checkout/success" element={<PublicLayout><CheckoutSuccess /></PublicLayout>} />
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route

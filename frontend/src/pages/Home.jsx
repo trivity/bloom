@@ -5,6 +5,7 @@ import { ArrowRight, MessageCircle, Brain, GraduationCap, Heart, Sparkles, BookO
 import ServiceCard from "../components/ServiceCard";
 import { Reveal, Overline, SectionTitle } from "../components/ui-bits";
 import { Leaf, Flower, Branch } from "../components/BotanicalAccent";
+import TestimonialsSection from "../components/TestimonialsSection";
 
 const HERO_IMG =
     "https://images.unsplash.com/photo-1764267703828-843753961a1e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxwYXJlbnQlMjBhbmQlMjBjaGlsZCUyMGxlYXJuaW5nJTIwdG9nZXRoZXIlMjB3YXJtJTIwbGlnaHR8ZW58MHx8fHwxNzc2OTI0NTYyfDA&ixlib=rb-4.1.0&q=85";
@@ -248,7 +249,9 @@ const Home = () => {
             </section>
 
             {/* CTA */}
-            <section className="pb-24 sm:pb-32">
+            <TestimonialsSection />
+
+            <section className="pb-24 sm:pb-32 pt-24 sm:pt-32">
                 <div className="max-w-5xl mx-auto px-6">
                     <div className="relative bg-bloom-cream-muted rounded-[2.5rem] p-10 sm:p-16 text-center overflow-hidden border border-bloom-border">
                         <Leaf className="absolute -top-6 -left-6 w-24 h-24 opacity-40" rotate={-20} />
