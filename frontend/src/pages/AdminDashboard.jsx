@@ -67,6 +67,7 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // ----- Product CRUD -----
